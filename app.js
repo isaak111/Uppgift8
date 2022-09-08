@@ -15,64 +15,84 @@ class User {
 let users = [new User ('admin','password123'),
             new User ('batman', 'mörker')];
 
-prompt.start();
 
-prompt.get(['input'], function (err, result) {
-    if(err) {return onErr(err);}
-    const command = result.input.toLocaleLowerCase().split(' ')[0]
-    let newInputName = result.input.toLocaleLowerCase().split(' ')[1]
-    let newInputPass = result.input.toLocaleLowerCase().split(' ')[2]
-    switch(command) {
-        case 'register':
-            let found = users.find(user => user.name === newInputName)
+let loggedIn = null;
 
-            if (found == undefined) {
-                users.push(new User(newInputName, newInputPass))
-                console.log('ny användare loggad' + newInputName)
-            }
-            users.map(item => console.log(item))               
-            break;
-        case 'list':
-            //lista alla regristerade användare
-            users.map(item => console.log(item.name))
-            break;
-        case 'info':
-            //specifik information
-            let found1 = users.find(user => user.name === newInputName)
-            console.log(found1)
-            break;
-        case 'delete':
-            //ta bort användare
-            let found3 = users.find(user => user.name === newInputName)
+waitForUser = () => {
+    prompt.start();
+    prompt.get(['input'], function (err, result) {
+        if(err) {return onErr(err);}
+        const command = result.input.toLocaleLowerCase().split(' ')[0]
+        let newInputName = result.input.toLocaleLowerCase().split(' ')[1]
+        let newInputPass = result.input.toLocaleLowerCase().split(' ')[2]
+        
+        switch(command) {
+            case 'register':
+                let found = users.find(user => user.name === newInputName)
 
-            if (found3.name == newInputName) {
-                users.splice(users.indexOf(found3), 1);
-            }
-            users.map(item => console.log(item))  
-            break;
-        case 'login':
-            // loggar in användare
-            // kontrollera så ingen är inloggad
-            break;
-        case 'logout':
-            //loggar ut användare
-            break;
-          
+                if (found == undefined) {
+                    users.push(new User(newInputName, newInputPass))
+                    console.log('ny användare loggad' + newInputName)
+                }
+                users.map(item => console.log(item))
+                waitForUser();               
+                break;
+            case 'list':
+                users.map(item => console.log(item.name))
+                waitForUser();
+                break;
+            case 'info':
+                let found1 = users.find(user => user.name === newInputName)
+                console.log(found1)
+                waitForUser();
+                break;
+            case 'delete':
+                let found3 = users.find(user => user.name === newInputName)
+
+                if (found3.name == newInputName) {
+                    users.splice(users.indexOf(found3), 1);
+                }
+                users.map(item => console.log(item))  
+                waitForUser();
+                break;
+            case 'login':
+                let found4 = users.find(user => user.name === newInputName)
+                if(found4.name === newInputName && found4.password === newInputPass && loggedIn === null){
+                    console.log(found4.name + " logged in")
+                    loggedIn = found4.name;
+                }else{
+                    console.log("Someone else is logged in..")
+                }
+                waitForUser();
+                break;
+            case 'logout':
+                let found5 = users.find(user => user.name === newInputName)
+                if(loggedIn !== null){
+                    if(loggedIn === found5.name){
+                        console.log(" you've logged out.")
+                        loggedIn = null;
+                    }else{
+                        console.log("User does not match input.")
+                    }
+                }else{
+                    console.log("No user is logged in..")
+                }
+                waitForUser();
+                break;
+            
+            case 'exit':
+                console.log("Bye Bye!")
+                break;
+            default:
+                console.log('borta')
+        }
 
 
-        default:
-            console.log('borta')
-    }
+    })
+}
 
-})
-
-/*prompt.get(['username', 'email'], function (err, result) {
-    if (err) { return onErr(err); }
-    console.log('Command-line input received:');
-    console.log('  Username: ' + result.username);
-    console.log('  Email: ' + result.email);
-});*/
-
+waitForUser();
+    
 function onErr(err) {
     console.log(err);
     return 1;
